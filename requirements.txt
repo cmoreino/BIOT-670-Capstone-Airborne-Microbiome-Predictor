@@ -1,0 +1,10 @@
+streamlit==1.50.0
+pandas
+numpy
+altair==5.5.0
+plotly
+matplotlib
+seaborn
+scikit-learn
+scipy
+vega_datasets
