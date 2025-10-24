@@ -1120,37 +1120,40 @@ with tab5:
                 st.caption("*Displays altitude per location within the selected range; the red dashed rule marks sea level at 0 km.*")
 
     # ALTITUDE INFLUENCE ON MODEL PERFORMANCE
-    st.divider()
-    with st.expander("Altitude Influence on Microbial Prediction Accuracy", expanded=False):
-        if "Altitude (km above sea level)" in df.columns and "Organism" in df.columns:
-            try:
-                df_eval = df.copy()
-                df_eval["Predicted"] = le_target.inverse_transform(clf_org.predict(df[features]))
-                df_eval["Match"] = (df_eval["Predicted"] == df_eval["Organism"]).astype(int)
+    # --- ALTITUDE INFLUENCE ON MODEL PERFORMANCE
+st.divider()
+with st.expander("Altitude Influence on Microbial Prediction Accuracy", expanded=False):
+    if "Altitude (km above sea level)" in df.columns and "Organism" in df.columns:
+        try:
+            df_eval = df.copy()
+            df_eval["Predicted"] = le_target.inverse_transform(clf_org.predict(df[features]))
+            df_eval["Match"] = (df_eval["Predicted"] == df_eval["Organism"]).astype(int)
 
-                # --- Accuracy by altitude bins
-                df_eval["Altitude_bin"] = pd.cut(df_eval["Altitude (km above sea level)"], bins=10)
-                altitude_acc = df_eval.groupby("Altitude_bin")["Match"].mean().reset_index()
-                altitude_acc["Accuracy (%)"] = altitude_acc["Match"] * 100
-
-                # --- Chart
-                alt_chart = (
-                    alt.Chart(altitude_acc)
-                    .mark_line(point=True)
-                    .encode(
-                        x=alt.X("Altitude_bin:N", title="Altitude Range (km)"),
-                        y=alt.Y("Accuracy (%):Q", title="Prediction Accuracy (%)"),
-                        tooltip=["Altitude_bin", "Accuracy (%)"]
-                    )
-                    .properties(title="Prediction Accuracy vs Altitude", width=900)
+            # --- Continuous accuracy trend with LOESS smoothing
+            alt_chart = (
+                alt.Chart(df_eval)
+                .mark_circle(size=70, opacity=0.6)
+                .encode(
+                    x=alt.X("Altitude (km above sea level):Q", title="Altitude (km above sea level)"),
+                    y=alt.Y("Match:Q", aggregate="mean", title="Prediction Accuracy (%)"),
+                    tooltip=["Altitude (km above sea level)", "Match"]
                 )
+                .transform_regression(
+                    "Altitude (km above sea level)", "Match", method="loess"
+                ).mark_line(color="orange", size=3)
+                .properties(title="Prediction Accuracy vs Altitude (Continuous)", width=900)
+            )
 
-                st.altair_chart(alt_chart, use_container_width=True)
-                st.caption("*Summarizes how prediction agreement varies with elevation; consistent peaks suggest altitude-specific generalization.*")
-            except Exception as e:
-                st.warning(f"Could not compute altitude influence chart: {e}")
-        else:
-            st.info("Altitude or organism data missing — cannot compute prediction accuracy by altitude.")
+            st.altair_chart(alt_chart, use_container_width=True)
+            st.caption(
+                "*Displays prediction accuracy continuously across altitudes, avoiding discrete bins. "
+                "The orange line represents a smoothed LOESS trend showing how altitude influences model performance.*"
+            )
+        except Exception as e:
+            st.warning(f"Could not compute altitude influence chart: {e}")
+    else:
+        st.info("Altitude or organism data missing — cannot compute prediction accuracy by altitude.")
+
 
 with tab6:
     st.header("Taxonomic Composition and Hierarchy")
@@ -1456,5 +1459,6 @@ with tab10:
                 file_name="model_metrics.csv",
                 mime="text/csv"
             )
+
 
 
