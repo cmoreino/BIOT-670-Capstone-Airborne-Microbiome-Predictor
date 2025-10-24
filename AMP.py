@@ -217,7 +217,12 @@ with tab1:
         )
     )
     st.altair_chart(bar_chart, use_container_width=True)
-    st.caption("*Shows the five most likely organisms for the given scenario, with bars reflecting predicted probability.*")
+    st.caption(
+        "Displays the five most likely organisms predicted for the current environmental scenario, "
+        "ranked by model-predicted probability (confidence). The bar lengths represent how strongly "
+        "the model associates each organism with the selected conditions, highlighting the dominant taxa "
+        "most likely to occur under these parameters."
+)
 
     st.divider()
 
@@ -225,8 +230,10 @@ with tab1:
     with st.expander("Predicted Organisms Across Environmental Conditions", expanded=False):
         st.caption(
             "Explore how predicted dominant organisms vary across environmental gradients such as "
-            "temperature, humidity, or altitude. The boxplot shows the distribution of environmental "
-            "values for each predicted organism. Select organisms or limit to the top-5 by confidence."
+            "temperature, humidity, or altitude. This section summarizes model predictions across the "
+            "entire dataset rather than a single input. Users can interactively select specific organisms, "
+            "or limit the visualization to the **Top-5 most frequently dominant or high-probability organisms** "
+            "across all environmental contexts based on model-predicted probability (confidence)."
         )
 
         # --- Prepare DataFrame with Predicted Labels
@@ -309,8 +316,13 @@ with tab1:
                     legend_title_text="Organism"
                 )
                 st.plotly_chart(fig_env, use_container_width=True)
-                st.caption("*Shows how environmental conditions vary for each predicted organism; wider boxes indicate broader environmental niches.*")
-
+                st.caption(
+                    "*Shows how environmental conditions vary for each predicted organism. Wider boxes indicate broader "
+                    "environmental niches, while narrower boxes suggest specialized adaptation. Displayed organisms represent "
+                    "the most probable or dominant taxa based on model-predicted probability (confidence). You can further refine "
+                    "the selection to explore how top-ranked organisms respond to specific environmental gradients.*"
+                    )
+                
                 # --- Optional color legend / summary table
                 st.markdown("### Organism Confidence Summary")
                 st.dataframe(
@@ -1444,4 +1456,5 @@ with tab10:
                 file_name="model_metrics.csv",
                 mime="text/csv"
             )
+
 
