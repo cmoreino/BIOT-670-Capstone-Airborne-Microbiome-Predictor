@@ -1425,6 +1425,21 @@ with tab10:
         col2.metric("RMSE", f"{metrics.get('RMSE', 0):.4f}")
         col3.metric("MAE", f"{metrics.get('MAE', 0):.4f}")
 
+        # Captions explaining each metric
+        st.caption(
+            """
+            **R² (Coefficient of Determination)** measures how well the model explains the variability of the data.  
+            A value close to 1 indicates strong predictive power, while a value near 0 or negative suggests the model
+            performs poorly compared to a simple average.
+        
+            **RMSE (Root Mean Square Error)** quantifies the model’s overall prediction error in the same units as the target variable.  
+            Lower RMSE values indicate higher accuracy and less deviation between predicted and observed values.
+        
+            **MAE (Mean Absolute Error)** shows the average magnitude of prediction errors.  
+            A lower MAE means the model’s predictions are, on average, closer to the true values.
+            """
+        )
+
     with st.expander("Cross-Validation Results", expanded=False):
         if "cv_mean" in locals():
             st.metric("Average CV R²", f"{cv_mean:.3f}")
@@ -1468,6 +1483,7 @@ with tab10:
                 file_name="model_metrics.csv",
                 mime="text/csv"
             )
+
 
 
 
