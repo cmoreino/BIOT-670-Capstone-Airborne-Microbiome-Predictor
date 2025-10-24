@@ -24,7 +24,7 @@ st.title("Airborne Microbiome Predictor (North America)")
 @st.cache_data
 def load_data():
     file_path = "ML-data.xlsx"  # ensure the file is in same directory
-    df = pd.read_excel("/ML-data.xlsx") 
+    df = pd.read_excel("ML-data.xlsx") 
     df.columns = df.columns.str.strip().str.replace(r"[\u200b\u00a0]", "", regex=True)
 
     numeric_columns = [
@@ -1444,3 +1444,4 @@ with tab10:
                 file_name="model_metrics.csv",
                 mime="text/csv"
             )
+
