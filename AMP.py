@@ -666,34 +666,38 @@ with tab4:
 
     # 2. ALTITUDE INFLUENCE ON PREDICTION ACCURACY
     with st.expander("Altitude Influence on Microbial Prediction Accuracy", expanded=False):
-        st.caption("Assesses how well the model performs across different altitude ranges.")
+    st.caption("Assesses how well the model performs across different altitude ranges.")
 
-        df_eval = df.copy()
-        df_eval["Predicted"] = le_target.inverse_transform(clf_org.predict(df[features]))
-        df_eval["Match"] = (df_eval["Predicted"] == df_eval["Organism"]).astype(int)
-        df_eval["Altitude_bin"] = pd.cut(df_eval["Altitude (km above sea level)"], bins=10)
+    df_eval = df.copy()
+    df_eval["Predicted"] = le_target.inverse_transform(clf_org.predict(df[features]))
+    df_eval["Match"] = (df_eval["Predicted"] == df_eval["Organism"]).astype(int)
 
-        altitude_acc = (
-            df_eval.groupby("Altitude_bin")["Match"]
-            .mean()
-            .reset_index()
-            .rename(columns={"Match": "Accuracy"})
+    # Create bins and label them by midpoint
+    bins = pd.cut(df_eval["Altitude (km above sea level)"], bins=10)
+    df_eval["Altitude_mid"] = bins.apply(lambda x: round(x.mid, 2))  # midpoint label
+
+    altitude_acc = (
+        df_eval.groupby("Altitude_mid")["Match"]
+        .mean()
+        .reset_index()
+        .rename(columns={"Match": "Accuracy"})
+    )
+    altitude_acc["Accuracy (%)"] = altitude_acc["Accuracy"] * 100
+
+    alt_chart = (
+        alt.Chart(altitude_acc)
+        .mark_line(point=True)
+        .encode(
+            x=alt.X("Altitude_mid:Q", title="Altitude (km, midpoint of range)"),
+            y=alt.Y("Accuracy (%):Q", title="Prediction Accuracy (%)"),
+            tooltip=["Altitude_mid", "Accuracy (%)"]
         )
-        altitude_acc["Accuracy (%)"] = altitude_acc["Accuracy"] * 100
+        .properties(title="Prediction Accuracy vs Altitude", width=850)
+    )
 
-        alt_chart = (
-            alt.Chart(altitude_acc)
-            .mark_line(point=True)
-            .encode(
-                x=alt.X("Altitude_bin:N", title="Altitude Range (km)"),
-                y=alt.Y("Accuracy (%):Q", title="Prediction Accuracy (%)"),
-                tooltip=["Altitude_bin", "Accuracy (%)"]
-            )
-            .properties(title="Prediction Accuracy vs Altitude", width=850)
-        )
+    st.altair_chart(alt_chart, use_container_width=True)
+    st.caption("*Displays prediction agreement across altitude bands; peaks suggest elevations where the model generalizes better.*")
 
-        st.altair_chart(alt_chart, use_container_width=True)
-        st.caption("*Displays prediction agreement across altitude bands; peaks suggest elevations where the model generalizes better.*")
 
         st.divider()
 
@@ -1483,6 +1487,7 @@ with tab10:
                 file_name="model_metrics.csv",
                 mime="text/csv"
             )
+
 
 
 
